@@ -77,15 +77,36 @@ dup_check <- d4 %>%
      # empty tibble = duplicates removed
 
 
-# Step 5: Remove outliers in each of the 7 columns
+# Step 5: Remove outliers in coordenate and dates
   # Step 5.A: Check for geographic outliers
-out_geo_plot <- ggplot(d4, aes(x = longitude, y = latitude)) +
+geo_full_plot <- ggplot(d4, aes(x = longitude, y = latitude)) +
   geom_point()
-      # Visually, all points fall within the map boundary of Washington DC. Some points appear like outliers but they represent crimes in the Potomac River, which is still considered Washington DC.
-  # Step 5.B: Check for date outliers
-out_date <- range(d4$report_dat)
-      # The range ends with 2025.  Filtering to remove any dates that do not belong to 2024.
+      # Visually, all points fall within the map boundary of Washington DC.
+  
+  # Step 5.B: Remove statistical outliers
 d5 <- d4 %>%
+  filter(
+    between(latitude,
+            quantile(latitude, 0.25) - 1.5 * IQR(latitude),
+            quantile(latitude, 0.75) + 1.5 * IQR(latitude)
+    ),
+    between(longitude,
+            quantile(longitude, 0.25) - 1.5 * IQR(longitude),
+            quantile(longitude, 0.75) + 1.5 * IQR(longitude)
+    )
+  )
+
+  # Step 5.C: Check new distribution
+geo_stat_plot <- ggplot(d5, aes(x = longitude, y = latitude )) +
+  geom_point()
+  
+
+  # Step 5.D: Check for date outliers
+out_date <- range(d4$report_dat)
+      # The range ends with 2025 dates.  
+
+  # Step 5.E: Filtering to remove any dates that do not belong to 2024.
+d6 <- d5 %>%
   filter(
     report_dat >= as.POSIXct("2024-01-01 00:00:00", tz = "UTC") &
     report_dat <= as.POSIXct("2024-12-31 23:59:59", tz = "UTC")
@@ -93,17 +114,19 @@ d5 <- d4 %>%
 
 
 # Step 6: Create columns for "month" and "day of the week" from the report_dat column {lubridate}
-d6 <- d5 %>%
+d7 <- d6 %>%
   mutate(
     month = month(report_dat, label = TRUE, abbr = FALSE),
     week_day = wday(report_dat, label = TRUE, abbr = FALSE)
   )
 
 # Step 7: Reorder columns 
-d6 <- d6 %>%
+d7 <- d7 %>%
   select(
     "report_dat", "month", "week_day", "shift", "offense", "block", "neighborhood_cluster", "latitude", "longitude"
   )
 
 # Step 8: Export as new .csv file {readr}
-write_csv(d6, "Data/Clean_CrimeData_2024.csv")
+write_csv(d7, "Data/Clean_CrimeData_2024.csv")
+
+
