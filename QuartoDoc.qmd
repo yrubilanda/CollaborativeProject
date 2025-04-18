@@ -3,23 +3,17 @@ title: "Collaborative Project"
 format: html
 ---
 
-## Quarto
+# Introduction:
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+## Crime Data in Washington DC in 2024
 
-## Running Code
+## Geospatial Analysis:
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this 
+## List of Packages:
 
 ```{r}
-#| echo: false
-2 * 2
+#| output: false
+library(tidyverse)
+library(janitor)
+library(lubridate)
 ```
-
-The `echo: false` option disables the printing of code (only output is displayed).
